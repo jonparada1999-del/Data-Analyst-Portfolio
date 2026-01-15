@@ -1,0 +1,3 @@
+
+
+Project 2 Data Source: TheLook Ecommerce Location: Google BigQuery Public Datasets (bigquery-public-data.thelook_ecommerce) Description: This is a comprehensive, synthetic ecommerce dataset developed by Google. It includes over 100,000 records across tables for users, orders, products, and distribution centers. Access Method: Queried directly via SQL in BigQuery; no local download required due to dataset size.
