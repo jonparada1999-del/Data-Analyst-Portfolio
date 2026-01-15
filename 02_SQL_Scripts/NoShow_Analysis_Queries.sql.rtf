@@ -1,0 +1,94 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2709
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Roman;\f1\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red22\green79\blue199;\red255\green255\blue255;
+\red24\green25\blue27;\red167\green0\blue95;\red46\green49\blue51;\red159\green77\blue4;\red24\green112\blue43;
+}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;\cssrgb\c9804\c40392\c82353;\cssrgb\c100000\c100000\c100000;
+\cssrgb\c12549\c12941\c14118;\cssrgb\c72157\c2353\c44706;\cssrgb\c23529\c25098\c26275;\cssrgb\c69020\c37647\c0;\cssrgb\c9412\c50196\c21961;
+}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs24 \cf0 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 /* PROJECT: Healthcare Appointment No-Show Analysis AUTHOR: Jonathan Parada TOOLS: Google BigQuery (SQL) OBJECTIVE: Identifying behavioral drivers for missed medical appointments.\
+\
+-- STEP 1: DATA CLEANING & FEATURE ENGINEERING -- This query creates a cleaned view, standardizes dates, and calculates 'wait_time_days'.
+\f1 \cf3 \cb4 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf3 CREATE\cf5 \strokec5  \cf3 \strokec3 OR\cf5 \strokec5  \cf3 \strokec3 REPLACE\cf5 \strokec5  \cf3 \strokec3 VIEW\cf5 \strokec5  \strokec2 `healthcare_data.cleaned_appointments`\strokec5  \cf3 \strokec3 AS\cf5 \cb1 \strokec5 \
+\cf3 \cb4 \strokec3 SELECT\cf5 \strokec5  \cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb4     \strokec2 PatientId\strokec5 ,\cb1 \
+\cb4     \strokec2 AppointmentID\strokec5 ,\cb1 \
+\cb4     \strokec2 Gender\strokec5 ,\cb1 \
+\cb4     \cf6 \strokec6 -- Convert text to real dates so we can do math\cf5 \cb1 \strokec5 \
+\cb4     \cf3 \strokec3 CAST\cf7 \strokec7 (\cf5 \strokec2 ScheduledDay\strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \cf3 \strokec3 DATE\cf7 \strokec7 )\cf5 \strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \strokec2 scheduled_date\strokec5 ,\cb1 \
+\cb4     \cf3 \strokec3 CAST\cf7 \strokec7 (\cf5 \strokec2 AppointmentDay\strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \cf3 \strokec3 DATE\cf7 \strokec7 )\cf5 \strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \strokec2 appointment_date\strokec5 ,\cb1 \
+\cb4     \cf6 \strokec6 -- Create a 'Wait Time' column: How long between booking and the appt\cf5 \cb1 \strokec5 \
+\cb4     \cf3 \strokec3 DATE_DIFF\cf7 \strokec7 (\cf3 \strokec3 CAST\cf7 \strokec7 (\cf5 \strokec2 AppointmentDay\strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \cf3 \strokec3 DATE\cf7 \strokec7 )\cf5 \strokec5 , \cf3 \strokec3 CAST\cf7 \strokec7 (\cf5 \strokec2 ScheduledDay\strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \cf3 \strokec3 DATE\cf7 \strokec7 )\cf5 \strokec5 , \strokec2 DAY\cf7 \strokec7 )\cf5 \strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \strokec2 wait_time_days\strokec5 ,\cb1 \
+\cb4     \strokec2 Age\strokec5 ,\cb1 \
+\cb4     \strokec2 Neighbourhood\strokec5 ,\cb1 \
+\cb4     \strokec2 SMS_received\strokec5 ,\cb1 \
+\cb4     \cf6 \strokec6 -- Using backticks to handle that hyphen in the name\cf5 \cb1 \strokec5 \
+\cb4     \strokec2 `No-show`\strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \strokec2 missed_appt\cb1 \strokec5 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 FROM\cf5 \strokec5  \strokec2 `healthcare_data.appointments`\cb1 \strokec5 \
+\cf3 \cb4 \strokec3 WHERE\cf5 \strokec5  \strokec2 Age\strokec5  \cf7 \strokec7 >=\cf5 \strokec5  \cf8 \strokec8 0\cf5 \strokec5 ; \cf6 \strokec6 -- Professional touch: Filtering out impossible ages\cf5 \cb1 \strokec5 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f0 \cf0 \strokec2 -- STEP 2: WAIT TIME ANALYSIS -- This query categorizes appointments by how long the patient waited to see a trend.
+\f1 \cf5 \strokec5 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 SELECT\cf5 \strokec5  \cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb4     \cf3 \strokec3 CASE\cf5 \strokec5  \cb1 \
+\cb4         \cf3 \strokec3 WHEN\cf5 \strokec5  \strokec2 wait_time_days\strokec5  = \cf8 \strokec8 0\cf5 \strokec5  \cf3 \strokec3 THEN\cf5 \strokec5  \cf9 \cb4 \strokec9 '1. Same Day'\cf5 \cb1 \strokec5 \
+\cb4         \cf3 \strokec3 WHEN\cf5 \strokec5  \strokec2 wait_time_days\strokec5  \cf7 \strokec7 <=\cf5 \strokec5  \cf8 \strokec8 7\cf5 \strokec5  \cf3 \strokec3 THEN\cf5 \strokec5  \cf9 \cb4 \strokec9 '2. Within a Week'\cf5 \cb1 \strokec5 \
+\cb4         \cf3 \strokec3 WHEN\cf5 \strokec5  \strokec2 wait_time_days\strokec5  \cf7 \strokec7 <=\cf5 \strokec5  \cf8 \strokec8 30\cf5 \strokec5  \cf3 \strokec3 THEN\cf5 \strokec5  \cf9 \cb4 \strokec9 '3. Within a Month'\cf5 \cb1 \strokec5 \
+\cb4         \cf3 \strokec3 ELSE\cf5 \strokec5  \cf9 \cb4 \strokec9 '4. Long Wait (30+ Days)'\cf5 \cb1 \strokec5 \
+\cb4     \cf3 \strokec3 END\cf5 \strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \strokec2 wait_category\strokec5 ,\cb1 \
+\cb4     \cf3 \strokec3 COUNT\cf7 \strokec7 (*)\cf5 \strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \strokec2 total_appointments\strokec5 ,\cb1 \
+\cb4     \cf3 \strokec3 ROUND\cf7 \strokec7 (\cf3 \strokec3 COUNTIF\cf7 \strokec7 (\cf5 \strokec2 missed_appt\strokec5  = \cf3 \strokec3 TRUE\cf7 \strokec7 )\cf5 \strokec5  \cf7 \strokec7 *\cf5 \strokec5  \cf8 \strokec8 100\cf5 \strokec5  \cf7 \strokec7 /\cf5 \strokec5  \cf3 \strokec3 COUNT\cf7 \strokec7 (*)\cf5 \strokec5 , \cf8 \strokec8 2\cf7 \strokec7 )\cf5 \strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \strokec2 no_show_rate\cb1 \strokec5 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 FROM\cf5 \strokec5  \strokec2 `healthcare_data.cleaned_appointments`\cb1 \strokec5 \
+\cf3 \cb4 \strokec3 GROUP\cf5 \strokec5  \cf3 \strokec3 BY\cf5 \strokec5  \cf8 \strokec8 1\cf5 \cb1 \strokec5 \
+\cf3 \cb4 \strokec3 ORDER\cf5 \strokec5  \cf3 \strokec3 BY\cf5 \strokec5  \cf8 \strokec8 1\cf5 \strokec5 ;\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f0 \cf0 \strokec2 -- STEP 3: AGE GROUP ANALYSIS -- This query identifies which generations have the highest no-show rates.
+\f1 \cf5 \strokec5 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 SELECT\cf5 \strokec5  \cb1 \
+\cb4     \cf3 \strokec3 CASE\cf5 \strokec5  \cb1 \
+\cb4         \cf3 \strokec3 WHEN\cf5 \strokec5  \strokec2 Age\strokec5  \cf7 \strokec7 <=\cf5 \strokec5  \cf8 \strokec8 18\cf5 \strokec5  \cf3 \strokec3 THEN\cf5 \strokec5  \cf9 \cb4 \strokec9 '0-18 (Youth)'\cf5 \cb1 \strokec5 \
+\cb4         \cf3 \strokec3 WHEN\cf5 \strokec5  \strokec2 Age\strokec5  \cf7 \strokec7 <=\cf5 \strokec5  \cf8 \strokec8 35\cf5 \strokec5  \cf3 \strokec3 THEN\cf5 \strokec5  \cf9 \cb4 \strokec9 '19-35 (Young Adult)'\cf5 \cb1 \strokec5 \
+\cb4         \cf3 \strokec3 WHEN\cf5 \strokec5  \strokec2 Age\strokec5  \cf7 \strokec7 <=\cf5 \strokec5  \cf8 \strokec8 60\cf5 \strokec5  \cf3 \strokec3 THEN\cf5 \strokec5  \cf9 \cb4 \strokec9 '36-60 (Adult)'\cf5 \cb1 \strokec5 \
+\cb4         \cf3 \strokec3 ELSE\cf5 \strokec5  \cf9 \cb4 \strokec9 '61+ (Senior)'\cf5 \cb1 \strokec5 \
+\cb4     \cf3 \strokec3 END\cf5 \strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \strokec2 age_group\strokec5 ,\cb1 \
+\cb4     \cf3 \strokec3 COUNT\cf7 \strokec7 (*)\cf5 \strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \strokec2 total_appointments\strokec5 ,\cb1 \
+\cb4     \cf3 \strokec3 ROUND\cf7 \strokec7 (\cf3 \strokec3 COUNTIF\cf7 \strokec7 (\cf5 \strokec2 missed_appt\strokec5  = \cf3 \strokec3 TRUE\cf7 \strokec7 )\cf5 \strokec5  \cf7 \strokec7 *\cf5 \strokec5  \cf8 \strokec8 100\cf5 \strokec5  \cf7 \strokec7 /\cf5 \strokec5  \cf3 \strokec3 COUNT\cf7 \strokec7 (*)\cf5 \strokec5 , \cf8 \strokec8 2\cf7 \strokec7 )\cf5 \strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \strokec2 no_show_rate\cb1 \strokec5 \
+\cf3 \cb4 \strokec3 FROM\cf5 \strokec5  \strokec2 `healthcare_data.cleaned_appointments`\cb1 \strokec5 \
+\cf3 \cb4 \strokec3 GROUP\cf5 \strokec5  \cf3 \strokec3 BY\cf5 \strokec5  \cf8 \strokec8 1\cf5 \cb1 \strokec5 \
+\cf3 \cb4 \strokec3 ORDER\cf5 \strokec5  \cf3 \strokec3 BY\cf5 \strokec5  \cf8 \strokec8 1\cf5 \strokec5 ;\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \
+\pard\pardeftab720\partightenfactor0
+
+\f0 \cf0 \strokec2 -- STEP 4: NEIGHBORHOOD HOTSPOT ANALYSIS -- This query finds the top 10 neighborhoods with the highest no-show percentages.
+\f1 \cf5 \strokec5 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb4 \strokec3 SELECT\cf5 \strokec5  \cb1 \
+\cb4     \strokec2 Neighbourhood\strokec5 ,\cb1 \
+\cb4     \cf3 \strokec3 COUNT\cf7 \strokec7 (*)\cf5 \strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \strokec2 total_appointments\strokec5 ,\cb1 \
+\cb4     \cf3 \strokec3 ROUND\cf7 \strokec7 (\cf3 \strokec3 COUNTIF\cf7 \strokec7 (\cf5 \strokec2 missed_appt\strokec5  = \cf3 \strokec3 TRUE\cf7 \strokec7 )\cf5 \strokec5  \cf7 \strokec7 *\cf5 \strokec5  \cf8 \strokec8 100\cf5 \strokec5  \cf7 \strokec7 /\cf5 \strokec5  \cf3 \strokec3 COUNT\cf7 \strokec7 (*)\cf5 \strokec5 , \cf8 \strokec8 2\cf7 \strokec7 )\cf5 \strokec5  \cf3 \strokec3 AS\cf5 \strokec5  \strokec2 no_show_rate\cb1 \strokec5 \
+\cf3 \cb4 \strokec3 FROM\cf5 \strokec5  \strokec2 `healthcare_data.cleaned_appointments`\cb1 \strokec5 \
+\cf3 \cb4 \strokec3 GROUP\cf5 \strokec5  \cf3 \strokec3 BY\cf5 \strokec5  \strokec2 Neighbourhood\cb1 \strokec5 \
+\cf3 \cb4 \strokec3 HAVING\cf5 \strokec5  \strokec2 total_appointments\strokec5  \cf7 \strokec7 >\cf5 \strokec5  \cf8 \strokec8 100\cf5 \strokec5  \cf6 \strokec6 -- Only look at areas with enough data\cf5 \cb1 \strokec5 \
+\cf3 \cb4 \strokec3 ORDER\cf5 \strokec5  \cf3 \strokec3 BY\cf5 \strokec5  \strokec2 no_show_rate\strokec5  \cf3 \strokec3 DESC\cf5 \cb1 \strokec5 \
+\cf3 \cb4 \strokec3 LIMIT\cf5 \strokec5  \cf8 \strokec8 10\cf5 \strokec5 ;\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \
+}
