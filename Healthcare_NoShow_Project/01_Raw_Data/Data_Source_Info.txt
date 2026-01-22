@@ -1,2 +1,0 @@
-
-Healthcare_No_Show_Project: Medical Appointment No Shows Location: Kaggle ( Size: 110,052 records / 14 variables Access Method: Processed via SQL in BigQuery; raw CSV removed for repository optimization.
