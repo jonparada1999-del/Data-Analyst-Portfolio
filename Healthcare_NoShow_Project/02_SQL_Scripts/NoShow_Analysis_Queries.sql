@@ -1,4 +1,4 @@
-/* PROJECT: Healthcare Appointment No-Show Analysis AUTHOR: Jonathan Parada TOOLS: Google BigQuery (SQL) OBJECTIVE: Identifying behavioral drivers for missed medical appointments.
+/* PROJECT: Healthcare Appointment No-Show Analysis AUTHOR: Jonathan Parada TOOLS: Google BigQuery (SQL) OBJECTIVE: Identifying behavioral drivers for missed medical appointments. 
 
 -- STEP 1: DATA CLEANING & FEATURE ENGINEERING -- This query creates a cleaned view, standardizes dates, and calculates 'wait_time_days'.
 CREATE OR REPLACE VIEW `healthcare_data.cleaned_appointments` AS
