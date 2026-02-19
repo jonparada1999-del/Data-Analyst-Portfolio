@@ -12,6 +12,6 @@ FROM
 WHERE 
     `Days for shipping _real_` > `Days for shipment _scheduled_`
 GROUP BY 
-    1 -- Grouping by Shipping Mode
+    `Shipping Mode`
 ORDER BY 
     late_shipments DESC;
