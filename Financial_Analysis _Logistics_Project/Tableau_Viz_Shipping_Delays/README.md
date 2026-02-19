@@ -1,5 +1,7 @@
 Supply Chain Financial & Logistics Audit
 
+Tools: SQL (BigQuery), Tableau, Data Modeling
+
 Link: https://public.tableau.com/app/profile/jonathan.parada/viz/ShippingDelays_17713552279380/RegionalProfitabilityLeakageAnalysis#2
 
 Project Overview: I developed this suite of visualizations to identify the intersection between logistics performance and financial health. By analyzing shipment volumes, regional profitability, and delivery efficiency, I can pinpoint exactly where the supply chain is losing money.
